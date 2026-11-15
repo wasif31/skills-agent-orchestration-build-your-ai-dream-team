@@ -1,0 +1,29 @@
+{
+  "source": "Illustrative sample data; these are not verified project updates.",
+  "projects": [
+    {
+      "name": "Northstar onboarding",
+      "owner": "Maya Chen",
+      "status": "In progress",
+      "recentActivity": "Reviewed the first-run flow and collected feedback from the pilot group.",
+      "priority": "High",
+      "summary": "Make the first week easier for new customers with a guided setup experience."
+    },
+    {
+      "name": "Atlas reporting",
+      "owner": "Jordan Rivera",
+      "status": "At risk",
+      "recentActivity": "The data model review surfaced two open questions for the analytics team.",
+      "priority": "Needs attention",
+      "summary": "Bring key account metrics together in a concise, dependable reporting view."
+    },
+    {
+      "name": "Field notes refresh",
+      "owner": "Sam Okafor",
+      "status": "Planning",
+      "recentActivity": "Drafted the scope and scheduled a kickoff with design and support.",
+      "priority": "Normal",
+      "summary": "Simplify how field teams capture and share customer observations."
+    }
+  ]
+}

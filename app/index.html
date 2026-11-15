@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A quick, clear view of project progress, ownership, and priorities.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard__intro">
+        <p class="dashboard__eyebrow">Team overview</p>
+        <h1>Project Pulse</h1>
+        <p>A clear snapshot of what’s moving, who’s leading, and where attention is needed.</p>
+      </header>
+
+      <section class="dashboard__projects" aria-labelledby="projects-heading">
+        <div class="dashboard__section-heading">
+          <h2 id="projects-heading">Projects</h2>
+        </div>
+        <ul class="project-grid" id="project-grid" aria-label="Project list"></ul>
+        <p class="dashboard__state" id="dashboard-state" role="status" aria-live="polite" aria-atomic="true">
+          Loading projects…
+        </p>
+      </section>
+    </main>
+
+    <script>
+      const projectGrid = document.getElementById("project-grid");
+      const dashboardState = document.getElementById("dashboard-state");
+
+      function showState(message, isError = false) {
+        dashboardState.textContent = message;
+        dashboardState.classList.toggle("dashboard__state--error", isError);
+        dashboardState.hidden = false;
+        projectGrid.hidden = true;
+      }
+
+      function displayValue(value, fallback) {
+        if (typeof value === "string" && value.trim()) {
+          return value.trim();
+        }
+        if (typeof value === "number" && Number.isFinite(value)) {
+          return String(value);
+        }
+        if (typeof value === "boolean") {
+          return value ? "Yes" : "No";
+        }
+        return fallback;
+      }
+
+      function addDetail(list, label, value, className) {
+        const row = document.createElement("div");
+        const term = document.createElement("dt");
+        const description = document.createElement("dd");
+        const content = document.createElement("span");
+
+        row.className = className;
+        term.textContent = label;
+        content.className = className === "project-card__status-row"
+          ? "project-card__status"
+          : "project-card__priority";
+        content.textContent = value;
+        description.append(content);
+        row.append(term, description);
+        list.append(row);
+      }
+
+      function createProjectCard(project) {
+        const record = project && typeof project === "object" ? project : {};
+        const item = document.createElement("li");
+        const card = document.createElement("article");
+        const header = document.createElement("header");
+        const title = document.createElement("h3");
+        const owner = document.createElement("p");
+        const details = document.createElement("dl");
+        const activity = document.createElement("p");
+        const summary = document.createElement("p");
+
+        item.className = "project-grid__item";
+        card.className = "project-card";
+        header.className = "project-card__header";
+        title.className = "project-card__title";
+        owner.className = "project-card__owner";
+        details.className = "project-card__details";
+        activity.className = "project-card__activity";
+        summary.className = "project-card__summary";
+
+        title.textContent = displayValue(record.name, "Untitled project");
+        owner.textContent = `Owner: ${displayValue(record.owner, "Owner not specified")}`;
+        addDetail(
+          details,
+          "Status",
+          displayValue(record.status, "Status unavailable"),
+          "project-card__status-row"
+        );
+        addDetail(
+          details,
+          "Priority",
+          displayValue(record.priority, "Priority not set"),
+          "project-card__priority-row"
+        );
+        activity.textContent = `Recent activity: ${displayValue(
+          record.recentActivity,
+          "No recent activity provided"
+        )}`;
+        summary.textContent = displayValue(record.summary, "No summary provided.");
+
+        header.append(title, owner);
+        card.append(header, details, activity, summary);
+        item.append(card);
+        return item;
+      }
+
+      async function loadProjects() {
+        try {
+          const response = await fetch("project-data.json");
+          if (!response.ok) {
+            throw new Error(`Project data request failed (${response.status}).`);
+          }
+
+          const data = await response.json();
+          if (!data || typeof data !== "object" || Array.isArray(data)) {
+            throw new Error("Project data has an unexpected format.");
+          }
+          if (data.projects !== undefined && !Array.isArray(data.projects)) {
+            throw new Error("The projects list has an unexpected format.");
+          }
+
+          const projects = Array.isArray(data.projects) ? data.projects : [];
+          if (projects.length === 0) {
+            showState("No projects to show yet. Add projects to project-data.json to get started.");
+            return;
+          }
+
+          projectGrid.replaceChildren(...projects.map(createProjectCard));
+          projectGrid.hidden = false;
+          dashboardState.hidden = true;
+        } catch (error) {
+          showState(
+            "Project information couldn’t be loaded. Please try again later or check project-data.json.",
+            true
+          );
+        }
+      }
+
+      loadProjects();
+    </script>
+  </body>
+</html>
